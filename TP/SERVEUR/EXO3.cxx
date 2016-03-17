@@ -64,12 +64,12 @@ int main(int argc, char * argv[]) {
 
     for (;;) {
         select((sock_serveur_udp > sock_serveur_tcp) ? sock_serveur_udp + 1 : sock_serveur_tcp +1,&rset,NULL,NULL,NULL);
+        date = time(NULL);
+        msg = ctime(&date);
         if(FD_ISSET(sock_serveur_udp, &rset)){
             cout << "Serveur en mode UDP" << endl;
             recvfrom(sock_serveur_udp, buf, sizeof(buf), 0,(struct sockaddr *) &sockaddr_client, &size);
             cout << buf <<endl;
-            date = time(NULL);
-            msg = ctime(&date);
             if (sendto(sock_serveur_udp, msg, strlen(msg), 0,(struct sockaddr *) &sockaddr_client,sizeof(sockaddr_client))== -1)
                 exitErreur("sendto");
         }else{
@@ -77,14 +77,11 @@ int main(int argc, char * argv[]) {
             sock_client = accept(sock_serveur_tcp, NULL, NULL);
             if (sock_client == -1)
                 exitErreur("accept");
-            date = time(NULL);
-            msg = ctime(&date);
             if (write(sock_client, msg, strlen(msg)) == -1)
                 exitErreur("write");
         }
 
     }
-
 
     close(sock_serveur_udp);
     close(sock_serveur_tcp);
