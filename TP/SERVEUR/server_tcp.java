@@ -19,7 +19,6 @@ public class ServerTcp {
 	private void run() throws IOException{
 		Socket client;
 		BufferedWriter out;
-		BufferedReader in;
 		ServerSocket server = new ServerSocket(this.port);
 		for(;;){
 			client = server.accept();
