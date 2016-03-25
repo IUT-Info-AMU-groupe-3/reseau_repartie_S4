@@ -27,6 +27,7 @@ public class ClientUdpdaytime {
 						msg.length(), InetAddress.getByName(this.hostname),this.port);
 				System.out.println("client daytime lancé vers : "+ this.hostname +":"+ this.port);
 				socket.send(packetSend);
+				socket.setSoTimeout(2000);
 				DatagramPacket date = new DatagramPacket(buf, buf.length);
 				socket.receive(date);
 				System.out.println(new String(date.getData(),0,date.getLength()));
