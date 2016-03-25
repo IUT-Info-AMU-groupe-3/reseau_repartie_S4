@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 public class ClientUdpdaytime {
@@ -32,6 +33,9 @@ public class ClientUdpdaytime {
 				socket.receive(date);
 				System.out.println(new String(date.getData(),0,date.getLength()));
 				socket.close();
+			}catch(SocketTimeoutException e){
+				System.out.println("Requête abandonnée, le serveur ne répond pas !");
+				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
