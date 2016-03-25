@@ -1,64 +1,61 @@
 package tp4_reseau;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyListener;
-import java.awt.event.WindowListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
+import java.net.UnknownHostException;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.JOptionPane;
 
-public class FenetreChat extends JFrame {
-
-	private JTextArea zoneDiscussion;
-	private JTextField champEnvoi;
-
-	public FenetreChat(String titre) throws IOException {
-
-		super(titre);
-
-		setBounds(600, 300, 400, 400);
-
-		Container conteneur = getContentPane();
-		conteneur.setLayout(new BorderLayout(20, 20));
-
-		zoneDiscussion = new JTextArea();
-		conteneur.add(zoneDiscussion, BorderLayout.CENTER);
-
-		JScrollPane barreDefilement = new JScrollPane(zoneDiscussion);
-		conteneur.add(barreDefilement);
-
-		zoneDiscussion.setEditable(false);
-
-		champEnvoi = new JTextField();
-		conteneur.add(champEnvoi, BorderLayout.SOUTH);
-
-		setVisible(true);
-
-	}
-
-	public void afficherMessage(String msg) {
-		zoneDiscussion.append(msg + "\n");
-	}
-
-	public void effacerChampEnvoi() {
-		champEnvoi.setText("");
-	}
-
-	public String getMessage() {
-		return champEnvoi.getText();
-	}
-
-	public void capturerEntree(KeyListener listener) {
-		champEnvoi.addKeyListener(listener);
-	}
+public class ClientChatMulticast {
+	final public static int PORT = 2000;
+	final public static String HOST = "238.0.0.25";
 	
-	public void gererFermeture(WindowListener listener) {
-		addWindowListener(listener);
-	}
+	public static void main(String[] args) throws IOException {
+
+        final FenetreChat fc = new FenetreChat("La folie du chat");
+        String pseudo = JOptionPane.showInputDialog("Pseudo", "Poireau Volant") + " : ";
+        Scanner sc = new Scanner(System.in);
+        final MulticastSocket socket = new MulticastSocket(PORT);
+        socket.joinGroup(InetAddress.getByName(HOST));
+        
+        fc.capturerEntree(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode() == KeyEvent.VK_ENTER){
+                    byte[] msg = (pseudo + fc.getMessage()).getBytes();
+                    try {
+                        DatagramPacket packet = new DatagramPacket(
+                                msg,
+                                msg.length,
+                                InetAddress.getByName(HOST),
+                                PORT
+                        );
+                        socket.send(packet);
+                        fc.effacerChampEnvoi();
+                    } catch (UnknownHostException ex) {
+                        Logger.getLogger(ClientChatMulticast.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IOException ex) {
+                        Logger.getLogger(ClientChatMulticast.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+        
+        byte[] buff = new byte[256];
+        DatagramPacket packet = new DatagramPacket(buff, buff.length);
+        
+        for(;;){
+            socket.receive(packet);
+            String msg = new String(packet.getData(), packet.getOffset(), packet.getLength());
+            fc.afficherMessage(msg);
+        }
+    }
 
 }
