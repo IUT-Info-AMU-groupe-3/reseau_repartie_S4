@@ -21,7 +21,6 @@ public class ClientChatMulticast {
 
         final FenetreChat fc = new FenetreChat("La folie du chat");
         String pseudo = JOptionPane.showInputDialog("Pseudo", "Poireau Volant") + " : ";
-        Scanner sc = new Scanner(System.in);
         final MulticastSocket socket = new MulticastSocket(PORT);
         socket.joinGroup(InetAddress.getByName(HOST));
         
